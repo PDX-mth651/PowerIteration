@@ -17,8 +17,8 @@ double PowerIterate(const Operator& op)
     constexpr int max_iter = 1000;
     constexpr bool verbose = true;
 
-    double ray_q = 0;
-    double ray_q_old = 1;
+    double ray_q = 1.0;
+    double ray_q_old = 1.0;
 
     int iter = 0;
 
@@ -32,20 +32,24 @@ double PowerIterate(const Operator& op)
 
         Swap(vect, vect_next);
 
+        const double rate = std::fabs(1.0 - (ray_q / ray_q_old));
+
         if (verbose)
         {
+
             printf("%.2d: ray_q: %.8f rate: %.2e\n",
-                   iter, ray_q, std::fabs(1.0 - (ray_q / ray_q_old)));
+                   iter, ray_q, rate);
         }
 
-        if (std::fabs(1.0 - (ray_q / ray_q_old)) < tol)
+        iter++;
+
+        if (rate < tol)
         {
             break;
         }
 
         ray_q_old = ray_q;
 
-        iter++;
     }
 
     return ray_q;
@@ -53,7 +57,7 @@ double PowerIterate(const Operator& op)
 
 int main(int argc, char** argv)
 {
-    CooMatrix<double> coo(5, 5);
+    CooMatrix<int> coo(5, 5);
     coo.AddSym(0, 0, 2);
     coo.AddSym(0, 1, -1);
     coo.AddSym(0, 2, -1);
@@ -66,8 +70,7 @@ int main(int argc, char** argv)
     coo.AddSym(3, 4, -1);
     coo.AddSym(4, 4, 2);
 
-
-    SparseMatrix<> sparse = coo.ToSparse();
+    SparseMatrix<int> sparse = coo.ToSparse();
     DenseMatrix dense = coo.ToDense();
 
     dense.Print("Input:");
