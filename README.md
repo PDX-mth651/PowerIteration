@@ -2,6 +2,7 @@
 An example use of the linear algebra library.
 
 # Build
-Make the linear algebra library found at https://github.com/gelever/linalgcpp.
-Then copy Makefile.in to Makefile and modify the library directory path.
-Make and try the example program in build/poweriteration
+* Make the linear algebra library found at https://github.com/gelever/linalgcpp.
+* Copy ```Makefile.in``` to ```Makefile```.
+* Modify ```Makefile``` the library directory path to where it is located on your machine.
+* Call ```make``` and try the example program in build/poweriteration
