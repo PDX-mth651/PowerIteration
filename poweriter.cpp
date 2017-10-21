@@ -1,34 +1,43 @@
+/* A simple example of using linalgcpp
+ */
+
 #include "linalgcpp.hpp"
 
 using namespace linalgcpp;
 
-double PowerIterate(const Operator& op)
+/* Performs power iterations to find the maximum eigenvalue.
+ *
+ * Computes until a tolerance is reached:
+ *     b_k_next = A b_k
+ *     b_k = b_k_next / ||b_k_next||
+ *
+ * Returns the computed maximum eigenvalue
+ *
+ */
+double PowerIterate(const Operator& op, int max_iter = 1000,
+                    double tol = 1e-6, bool verbose = false)
 {
     assert(op.Rows() == op.Cols());
 
     const size_t size = op.Rows();
 
+    // Setup Vectors and initialize with random guess
     Vector<double> vect(size);
     Vector<double> vect_next(size);
 
     Randomize(vect);
 
-    constexpr double tol = 1e-6;
-    constexpr int max_iter = 1000;
-    constexpr bool verbose = true;
-
+    // Keep track of the Rayleigh quotient
     double ray_q = 1.0;
     double ray_q_old = 1.0;
 
-    int iter = 0;
-
-    while (iter < max_iter)
+    for (int iter = 0; iter < max_iter; ++iter)
     {
         op.Mult(vect, vect_next);
 
         ray_q = (vect * vect_next) / (vect * vect);
 
-        Normalize(vect_next);
+        vect_next /= L2Norm(vect_next);
 
         Swap(vect, vect_next);
 
@@ -36,12 +45,9 @@ double PowerIterate(const Operator& op)
 
         if (verbose)
         {
-
             printf("%.2d: ray_q: %.8f rate: %.2e\n",
                    iter, ray_q, rate);
         }
-
-        iter++;
 
         if (rate < tol)
         {
@@ -49,7 +55,6 @@ double PowerIterate(const Operator& op)
         }
 
         ray_q_old = ray_q;
-
     }
 
     return ray_q;
@@ -57,7 +62,9 @@ double PowerIterate(const Operator& op)
 
 int main(int argc, char** argv)
 {
+    // Create some test matrix
     CooMatrix<int> coo(5, 5);
+
     coo.AddSym(0, 0, 2);
     coo.AddSym(0, 1, -1);
     coo.AddSym(0, 2, -1);
@@ -70,22 +77,24 @@ int main(int argc, char** argv)
     coo.AddSym(3, 4, -1);
     coo.AddSym(4, 4, 2);
 
+    // Create different operators
     SparseMatrix<int> sparse = coo.ToSparse();
     DenseMatrix dense = coo.ToDense();
 
     dense.Print("Input:");
 
-    printf("Computing Dense Eval:\n");
-    double max_eval_dense = PowerIterate(dense);
-    printf("Max Eval Dense: %.2f\n", max_eval_dense);
+    // Compute Max Eigenvalues using different operators
+    constexpr int max_iter = 100;
+    constexpr double tol = 1e-6;
+    constexpr bool verbose = false;
 
-    printf("\nComputing Sparse Eval:\n");
-    double max_eval_sparse = PowerIterate(sparse);
-    printf("Max Eval Sparse: %.2f\n", max_eval_sparse);
+    double eval_dense = PowerIterate(dense, max_iter, tol, verbose);
+    double eval_sparse = PowerIterate(sparse, max_iter, tol, verbose);
+    double eval_coo = PowerIterate(coo, max_iter, tol, verbose);
 
-    printf("\nComputing Coo Eval:\n");
-    double max_eval_coo = PowerIterate(coo);
-    printf("Max Eval Coo: %.2f\n", max_eval_coo);
+    std::cout << "Max Eval Dense:  " << eval_dense << "\n";
+    std::cout << "Max Eval Sparse: " << eval_sparse << "\n";
+    std::cout << "Max Eval Coo:    " << eval_coo << "\n";
 
     return EXIT_SUCCESS;
 }
