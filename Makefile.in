@@ -21,4 +21,4 @@ $(PROGS):
 clean:
 	@rm -rf $(addprefix $(BUILD_DIR)/, $(PROGS))
 
-phony: all clean
+.PHONY: all clean
