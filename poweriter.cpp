@@ -60,10 +60,11 @@ double PowerIterate(const Operator& op, int max_iter = 1000,
     return ray_q;
 }
 
-int main(int argc, char** argv)
+/* Creates a simple graph for testing */
+template <typename T = int>
+CooMatrix<T> TestGraph()
 {
-    // Create some test matrix
-    CooMatrix<int> coo(5, 5);
+    CooMatrix<T> coo(5, 5);
 
     coo.AddSym(0, 0, 2);
     coo.AddSym(0, 1, -1);
@@ -76,6 +77,14 @@ int main(int argc, char** argv)
     coo.AddSym(3, 3, 2);
     coo.AddSym(3, 4, -1);
     coo.AddSym(4, 4, 2);
+
+    return coo;
+}
+
+int main(int argc, char** argv)
+{
+    // Create a test matrix
+    CooMatrix<int> coo = TestGraph();
 
     // Create different operators
     SparseMatrix<int> sparse = coo.ToSparse();
